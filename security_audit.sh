@@ -14,7 +14,7 @@ NC='\033[0m'
 
 # Log file
 TIMESTAMP=$(date +"%Y-%m-%d_%H-%M")
-LOG_DIR=~/bash_scripts/logs
+LOG_DIR=~/projects/aws-security-audit/logs
 LOG_FILE="$LOG_DIR/security_audit_$TIMESTAMP.log"
 mkdir -p $LOG_DIR
 

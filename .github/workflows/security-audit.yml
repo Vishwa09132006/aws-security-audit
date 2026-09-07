@@ -1,0 +1,39 @@
+name: AWS Security Audit
+
+on:
+  push:
+    branches: [main]
+  schedule:
+    - cron: '0 9 * * *'  # runs every day at 9am UTC
+  workflow_dispatch:       # allows manual trigger from GitHub
+
+jobs:
+  security-audit:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get install -y python3
+
+      - name: Run security audit
+        run: |
+          chmod +x security_audit.sh
+          bash security_audit.sh
+
+      - name: Upload audit report as artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: security-audit-report
+          path: logs/
+          retention-days: 30
