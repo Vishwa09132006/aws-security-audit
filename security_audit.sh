@@ -1,5 +1,3 @@
-#!/bin/bash
-
 # ─── AWS Cloud Security Audit Script ─────────────────────
 # Checks your AWS account for common security misconfigurations
 # Works on any AWS account — no hardcoded values
@@ -17,6 +15,9 @@ TIMESTAMP=$(date +"%Y-%m-%d_%H-%M")
 LOG_DIR=$(dirname "$0")/logs
 LOG_FILE="$LOG_DIR/security_audit_$TIMESTAMP.log"
 mkdir -p $LOG_DIR
+
+# SNS Topic
+SNS_TOPIC_ARN="arn:aws:sns:us-east-1:409832455371:security-audit-alerts"
 
 # Account info
 ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
@@ -228,6 +229,27 @@ if [ $? -eq 0 ]; then
   echo -e "${GREEN}  [PASS]${NC} Report uploaded to S3"
 else
   echo -e "${YELLOW}  [WARN]${NC} S3 upload failed — report saved locally only"
+fi
+
+# ── SNS Alert on Failure ──
+if [ $FAIL -gt 0 ]; then
+  echo ""
+  echo "Sending SNS alert..."
+  aws sns publish \
+    --topic-arn $SNS_TOPIC_ARN \
+    --subject "AWS Security Audit Alert — $FAIL issue(s) found" \
+    --message "Security audit ran on $(date).
+Account: $ACCOUNT_ID
+Region: $REGION
+Score: $PASS/$TOTAL checks passed
+$FAIL issue(s) need attention.
+Check the full report in S3: s3://vp-cloud-backups-2026/security-audits/"
+
+  if [ $? -eq 0 ]; then
+    echo -e "${GREEN}  [INFO]${NC} Alert sent to vishwapat00@gmail.com"
+  else
+    echo -e "${YELLOW}  [WARN]${NC} SNS alert failed to send"
+  fi
 fi
 
 # ── Clean up old local logs ──
