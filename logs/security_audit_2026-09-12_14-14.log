@@ -1,0 +1,24 @@
+=======================================================
+ AWS Cloud Security Audit Report
+ Date:       Sat Sep 12 14:14:26 EDT 2026
+ Account ID: 409832455371
+ Region:     us-east-1
+ Run by:     arn:aws:iam::409832455371:user/vp-cli-user
+=======================================================
+
+[PASS] Root account has no active access keys
+[PASS] vp-cloud-backups-2026 — Fully private
+[WARN] vp-cloud-portfolio-2026 — Public access enabled
+  → Note: Intentional if hosting a static website. If not, enable Block Public Access in S3 console.
+[PASS] No security groups with unrestricted inbound access found
+[FAIL] vp-cli-user — MFA not enabled
+  → Fix: AWS Console → IAM → Users → vp-cli-user → Security Credentials → Assign MFA device
+[FAIL] No CloudTrail trails found — API activity is not being logged
+  → Fix: Run: aws cloudtrail create-trail --name my-trail --s3-bucket-name YOUR_BUCKET && aws cloudtrail start-logging --name my-trail
+[FAIL] No custom password policy configured
+  → Fix: Run: aws iam update-account-password-policy --minimum-password-length 12 --require-symbols --require-numbers --require-uppercase-characters --require-lowercase-characters --max-password-age 90
+
+=======================================================
+ Score: 3/7 checks passed
+ 4 issue(s) need attention
+=======================================================
