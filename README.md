@@ -2,7 +2,7 @@
 
 An automated cloud security monitoring tool that scans your AWS account for common misconfigurations, generates a detailed report, and sends real-time email alerts when issues are found — running entirely on autopilot via GitHub Actions.
 
-**Live demo:** check the [Actions tab](https://claude.ai/actions) to see the latest audit run and download the report.
+**Live demo:** check the [Actions tab](https://github.com/Vishwa09132006/aws-security-audit/actions) to see the latest audit run and download the report.
 
 * * *
 
