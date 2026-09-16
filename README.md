@@ -134,16 +134,8 @@ Then push to main — the workflow triggers automatically.
 
 * * *
 
-## Roadmap
+## Feedback & Issues
 
--   \[ \] Enable MFA on `vp-cli-user` → push score to 4/7
--   \[ \] Enable CloudTrail → push score to 5/7
--   \[ \] Add custom password policy → push score to 6/7
--   \[ \] Add severity levels (CRITICAL / HIGH / MEDIUM)
--   \[ \] Expand to multi-region scanning
--   \[ \] Add Slack notification support
--   \[ \] Auto-remediation for low-risk findings
+If you run into any errors or have suggestions while using this project, feel free to open an issue in this repo — I'd love to know how it works across different AWS environments.
 
-* * *
-
-*Built as part of a self-directed cloud engineering roadmap — Phase 2 of 5.* *Queens College CS · Building toward a cloud engineering internship.*
+Connect with me on LinkedIn: [Vishwa P.](https://www.linkedin.com/in/vishwa-patel-31a237355)
