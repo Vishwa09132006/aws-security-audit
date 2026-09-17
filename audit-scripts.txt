@@ -1,29 +1,85 @@
-Check 1 — Root account access keys
-aws iam get-account-summary --query "SummaryMap.AccountAccessKeysPresent"
+Check 1 — Root Account Access Keys
+root_keys=$(aws iam get-account-summary --query "SummaryMap.AccountAccessKeysPresent" --output text)
 
-Check 2 — S3 public access for ALL buckets automatically
-for bucket in $(aws s3api list-buckets --query "Buckets[*].Name" --output text); do
-  echo "Bucket: $bucket"
-  aws s3api get-public-access-block --bucket $bucket 2>/dev/null || echo "No public access block configured"
-done
+if [ "$root_keys" -eq 0 ]; then
+  pass "Root account has no active access keys"
+else
+  fail "Root account has active access keys" \
+       "AWS Console → IAM → Security Credentials → Delete root access keys immediately"
+fi
 
-Check 3 — Security groups open to internet
-aws ec2 describe-security-groups \
+Check 2 — S3 Bucket Public Access
+buckets=$(aws s3api list-buckets --query "Buckets[*].Name" --output text)
+
+if [ -z "$buckets" ]; then
+  info "No S3 buckets found in this account"
+else
+  for bucket in $buckets; do
+    block=$(aws s3api get-public-access-block --bucket $bucket 2>/dev/null)
+    if [ $? -ne 0 ]; then
+      fail "$bucket — No public access block configured" \
+           "AWS Console → S3 → $bucket → Permissions → Block Public Access → Enable all"
+    else
+      restrict=$(echo $block | python3 -c "import sys,json; d=json.load(sys.stdin)['PublicAccessBlockConfiguration']; print('true' if all(d.values()) else 'false')")
+      if [ "$restrict" == "true" ]; then
+        pass "$bucket — Fully private"
+      else
+        warn "$bucket — Public access enabled" \
+             "Intentional if hosting a static website. If not, enable Block Public Access in S3 console."
+        FAIL=$((FAIL + 1))
+      fi
+    fi
+  done
+fi
+
+Check 3 — Security Groups Open to Internet (0.0.0.0/0)
+open_groups=$(aws ec2 describe-security-groups \
   --query "SecurityGroups[?IpPermissions[?IpRanges[?CidrIp=='0.0.0.0/0']]].GroupName" \
-  --output text
+  --output text)
 
-Check 4 — ALL IAM users without MFA
-for user in $(aws iam list-users --query "Users[*].UserName" --output text); do
-  mfa=$(aws iam list-mfa-devices --user-name $user --query "MFADevices[*].SerialNumber" --output text)
-  if [ -z "$mfa" ]; then
-    echo "$user — NO MFA"
-  else
-    echo "$user — MFA enabled"
-  fi
-done
+if [ -z "$open_groups" ]; then
+  pass "No security groups with unrestricted inbound access found"
+else
+  for group in $open_groups; do
+    fail "Security group '$group' allows unrestricted inbound traffic" \
+         "AWS Console → EC2 → Security Groups → $group → Edit inbound rules → restrict source IPs"
+  done
+fi
 
-Check 5 — CloudTrail enabled
-aws cloudtrail describe-trails --query "trailList[*].Name" --output text
+Check 4 — IAM Users Without MFA
+users=$(aws iam list-users --query "Users[*].UserName" --output text)
 
-Check 6 — IAM password policy
-aws iam get-account-password-policy 2>/dev/null || echo "No custom IAM password policy configured (using AWS default policy)"
+if [ -z "$users" ]; then
+  info "No IAM users found"
+else
+  for user in $users; do
+    mfa=$(aws iam list-mfa-devices --user-name $user \
+      --query "MFADevices[*].SerialNumber" --output text)
+    if [ -z "$mfa" ]; then
+      fail "$user — MFA not enabled" \
+           "AWS Console → IAM → Users → $user → Security Credentials → Assign MFA device"
+    else
+      pass "$user — MFA enabled"
+    fi
+  done
+fi
+
+Check 5 — CloudTrail Logging
+trails=$(aws cloudtrail describe-trails --query "trailList[*].Name" --output text)
+
+if [ -z "$trails" ]; then
+  fail "No CloudTrail trails found — API activity is not being logged" \
+       "Run: aws cloudtrail create-trail --name my-trail --s3-bucket-name YOUR_BUCKET && aws cloudtrail start-logging --name my-trail"
+else
+  pass "CloudTrail is enabled: $trails"
+fi
+
+Check 6 — IAM Password Policy
+aws iam get-account-password-policy &>/dev/null
+
+if [ $? -ne 0 ]; then
+  fail "No custom password policy configured" \
+       "Run: aws iam update-account-password-policy --minimum-password-length 12 --require-symbols --require-numbers --require-uppercase-characters --require-lowercase-characters --max-password-age 90"
+else
+  pass "Custom IAM password policy is configured"
+fi
