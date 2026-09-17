@@ -7,7 +7,7 @@ An automated cloud security monitoring tool that scans your AWS account for comm
 * * *
 
 ## What it does
-
+![](images/aws-security-audit-DIAGRAM.png)
 Every day at 9am UTC this tool automatically audits your AWS environment across 6 security checks, uploads a timestamped report to S3, and emails you instantly if anything needs attention.
 
 ```
