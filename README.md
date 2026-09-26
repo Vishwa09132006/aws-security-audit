@@ -1,5 +1,7 @@
 # AWS Cloud Security Audit
 
+## *Currently being updated right now since I want to integrate Docker so whoever wants to run this security audit can do so smoothly. Thank you.* 
+
 An automated cloud security monitoring tool that scans your AWS account for common misconfigurations, generates a detailed report, and sends real-time email alerts when issues are found — running entirely on autopilot via GitHub Actions.
 
 **Live demo:** check the [Actions tab](https://github.com/Vishwa09132006/aws-security-audit/actions) to see the latest audit run and download the report.
@@ -8,10 +10,10 @@ An automated cloud security monitoring tool that scans your AWS account for comm
 
 ## What it does
 ![](images/aws-security-audit-DIAGRAM.png)
-Every day at 9am UTC this tool automatically audits your AWS environment across 6 security checks, uploads a timestamped report to S3, and emails you instantly if anything needs attention.
+Every week at 9am UTC this tool automatically audits your AWS environment across 6 security checks, uploads a timestamped report to S3, and emails you instantly if anything needs attention.
 
 ```
-Scheduled trigger (daily 9am) or push to main
+Scheduled trigger (weekly at 9am) or push to main
               ↓
       GitHub Actions runner
               ↓
@@ -29,7 +31,7 @@ Scheduled trigger (daily 9am) or push to main
 * * *
 
 ## Security checks
-
+The **actual** security check commands **GitHub Actions** runs once a week are available [here](audit-scripts.txt)
 | # | Check | What it looks for |
 | --- | --- | --- |
 | 1 | Root account access keys | Active keys on the root account — highest severity risk |
@@ -81,7 +83,7 @@ Scheduled trigger (daily 9am) or push to main
 
 ## Features
 
-**Automated scheduling** — runs every day at 9am UTC without any manual intervention. Also triggers on every push to main and can be run manually from the GitHub Actions tab.
+**Automated scheduling** — runs every week at 9am UTC without any manual intervention. Also triggers on every push to main and can be run manually from the GitHub Actions tab.
 
 **Real-time alerts** — AWS SNS sends an email the moment a failure is detected, including the score and a direct link to the full report in S3.
 
@@ -139,3 +141,5 @@ Then push to main — the workflow triggers automatically.
 If you run into any errors or have suggestions while using this project, feel free to open an issue in this repo — I'd love to know how it works across different AWS environments.
 
 Connect with me on LinkedIn: [Vishwa P.](https://www.linkedin.com/in/vishwa-patel-31a237355)
+
+Read my Medium Articles at: [Vishwapat](https://medium.com/@vishwapat00)
